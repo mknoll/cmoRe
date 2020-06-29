@@ -1,0 +1,24 @@
+Package: cmoRe
+Type: Package
+Title: Analysis of CellProfiler acquired data for disease profiling and drug discovery.
+Version: 0.2
+Date: 2020-06-24
+Author: Maximilian Knoll <m.knoll@dkfz.de>
+Maintainer: Maximilian Knoll <m.knoll@dkfz.de>
+Description: Package for analysis of single cell morphology data acquired with CellProfiler
+License: GPL3
+RoxygenNote: 7.1.0
+NeedsCompilation: no
+Imports: data.table,
+    doParallel,
+    foreach,
+    lsmeans,
+    nlme,
+    parallel,
+    pheatmap,
+    plyr,
+    randomForest,
+    sciplot
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,163 @@
+#' @title Read data 
+#'
+#' @description Reads experiment associated data. Variables get suffix 
+#' .cell, .nucl, .cyto
+#' 
+#' @param data list contianing a lists of filesnames, all corresponding 
+#' a separate experiment
+#' @param vars Variables to read, defaults to NULL (all variables)
+#' @param treatVar Treatment / Grouping variables as given in the 
+#' treatment file
+#' @param well Well Variable within the treatment file
+#' @param files CellProfiler output files and treatment file
+#' @param normalizeWells convert A01->A1
+#' @param force force continuation if dimensions don't match
+#'
+#' @import data.table
+#'
+#' @export
+readData <- function(data, vars=NULL, treatVar=c("Treatment", "Konzentration"), wellVar="well",
+                     files=c("Treatment.csv", "Cells.txt", "Primarieswithoutborder.txt", "Cytoplasm.txt"),
+                     normalizeWells=T, sepTreat="_", adaptVars=F, force=F,
+		     filterVars=c("Intensity_IntegratedIntensity_DNA", "Intensity_MedianIntensity_DNA", "AreaShape_Area")) {
+
+    ## All needed files
+    if (length(files) < 3) {
+        stop("Please provide three filenames as file parameter: Treatment, Cell (Cells.txt), Nucl (Primariesiwthoutborder.txt), Cytoplasm (Sytoplasm.txt) measurements")
+    }
+
+    ## test if all necessary files/variables exist
+    ### FIXME
+    cytoF <- T
+    if (length(files) == 3) {
+	cytoF <- F
+    }
+    ### FIXME normalizeWells!!!!!!
+
+    varsTmp <- NULL
+    for (i in 1:length(data)) {
+        for (j in 1:length(data[[i]])) {
+            ##read treatment
+            treat <- read.csv(paste(data[[i]][[j]], files[1], sep=""), dec=",")
+            if (!wellVar %in% colnames(treat)) {
+                stop(paste("Please provide a valid Well variable in the treatment file!\n",
+                           "Identified vars: ", paste(colnames(treat), collapse="|"), "\n",
+                           "FILE: ", paste(data[[i]][[j]], files[1], sep="")))
+            }
+            if (length(which(treatVar %in% colnames(treat))) != length(treatVar)) {
+                stop(paste("Could not identify treatment / conc vars!\n",
+                           "Please provide valid colnames as treatVar parameter!\n",
+                           "treatVar=c('Treatment','Konzentration')",
+                           "Identified vars: ", paste(colnames(treat), collapse="|"), "\n",
+                           "FILE: ", paste(data[[i]][[j]], files[1], sep="")))
+            }
+            cell <- data.frame(fread(paste(data[[i]][[j]], files[2], sep=""), nrows=10))
+            nucl <- data.frame(fread(paste(data[[i]][[j]], files[3], sep=""), nrows=10))
+	    if (cytoF) {
+		cyto <- data.frame(fread(paste(data[[i]][[j]], files[4], sep=""), nrows=10))
+	    }
+            if (!all(c("Metadata_Well","ImageNumber","ObjectNumber") %in% colnames(cell))) {
+                stop(paste("Metdata_Well, ImageNumber or ObjectNumber columns could not be identified in Cells.txt\n",
+                           "FILE: ", paste(data[[i]][[j]], files[1], sep="")))
+            }
+	    ### check if any of first 9 rows has NA for metadata_info
+	    if (cytoF) {
+		if (any(is.na(cell$Metadata_Well)) || any(is.na(nucl$Metadata_Well)) || any(is.na(cyto$Metadata_Well))) {
+		    stop(paste("Metadata_Well corrupt! (NA) \n",
+			       "FILE: ", paste(data[[i]][[j]], files[2], " or ", files[3], " or ", files[4], sep="")))
+		}
+	    } else {
+		if (any(is.na(cell$Metadata_Well)) || any(is.na(nucl$Metadata_Well))) {
+		    stop(paste("Metadata_Well corrupt! (NA) \n",
+			       "FILE: ", paste(data[[i]][[j]], files[2], " or ", files[3], " or ", files[4], sep="")))
+		}
+	    }
+	    ### add suffix to cell, nucl, cyto
+	    sC <- which(colnames(cell) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+	    colnames(cell)[-sC] <- paste(colnames(cell)[-sC], ".cell", sep="")
+	    if (cytoF) {
+		sC <- which(colnames(cyto) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+		colnames(cyto)[-sC] <- paste(colnames(cyto)[-sC], ".nucl", sep="")
+	    }
+	    sC <- which(colnames(nucl) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+	    colnames(nucl)[-sC] <- paste(colnames(nucl)[-sC], ".cyto", sep="")
+            dat_merged <- merge(cell, nucl, by=c('Metadata_Well','ImageNumber', 'ObjectNumber'))    
+	    if (cytoF) {
+		dat_merged <- merge(dat_merged, cyto, by=c('Metadata_Well','ImageNumber', 'ObjectNumber'))    
+	    }
+            if (is.null(varsTmp)) {
+                    varsTmp <- colnames(dat_merged)
+            } 
+            if (!all(varsTmp == colnames(dat_merged)) && !adaptVars) {
+                stop(paste("Different numbers of vars: ", length(varsTmp), " vs ",
+                           length(dat_merged[1,]),"\nSet adaptVars to T for an automatic intersect"))
+            }
+            varsTmp <- intersect(varsTmp, colnames(dat_merged))
+        }
+    }
+    if (is.null(vars) && adaptVars) {
+        vars <- unlist(do.call(rbind, strsplit(varsTmp, "\\."))[,1])
+    }
+
+    ## read
+    dtAll <- list()
+    for (i in 1:length(data)) {
+        for (j in 1:length(data[[i]])) {
+            ##read treatment
+            treat <- read.csv(paste(data[[i]][[j]], files[1], sep=""), dec=",")
+            treat$TREAT_CMPL <- apply(treat[,which(colnames(treat) %in% treatVar)], 1, function(x) paste(trimws(x), collapse=sepTreat, sep=""))
+            if (is.null(vars)) {
+                cell <- data.frame(fread(paste(data[[i]][[j]], files[2], sep="")))
+                nucl <- data.frame(fread(paste(data[[i]][[j]], files[3], sep="")))
+		if (cytoF) {
+		    cyto <- data.frame(fread(paste(data[[i]][[j]], files[4], sep="")))
+		}
+            } else {
+                vars <- c(vars, "Metadata_Well", "ImageNumber", "ObjectNumber", filterVars) ##TODO: check if fitler Vars works
+                vars <- unique(as.character(vars))
+                cell <- data.frame(fread(paste(data[[i]][[j]], files[2], sep=""), select=vars))
+                nucl <- data.frame(fread(paste(data[[i]][[j]], files[3], sep=""), select=vars))
+		if (cytoF) {
+		    cyto <- data.frame(fread(paste(data[[i]][[j]], files[4], sep=""), select=vars))
+		}
+            }
+	    ### Check again for all measurements!
+	    if (any(is.na(cell$Metadata_Well)) || any(is.na(nucl$Metadata_Well))) {
+		stop(paste("Metadata_Well corrupt! (NA) \n",
+                           "FILE: ", paste(data[[i]][[j]], files[2], " or ", files[3], sep="")))
+	    }
+            ##merge cell/nucl
+            if (length(cell[,1]) != length(nucl[,1])) {
+		### FIXME!
+		warning("Unterschiedliche Dimensionen!") ## TODO: oben testen
+            }
+	    ### add suffix to cell, nucl, cyto
+	    sC <- which(colnames(cell) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+	    colnames(cell)[-sC] <- paste(colnames(cell)[-sC], ".cell", sep="")
+	    if (cytoF) {
+		sC <- which(colnames(cyto) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+		colnames(cyto)[-sC] <- paste(colnames(cyto)[-sC], ".cyto", sep="")
+	    }
+	    sC <- which(colnames(nucl) %in% c('Metadata_Well','ImageNumber', 'ObjectNumber'))
+	    colnames(nucl)[-sC] <- paste(colnames(nucl)[-sC], ".nucl", sep="")
+            dat_merged <- merge(cell, nucl, by=c('Metadata_Well','ImageNumber', 'ObjectNumber'))    
+	    if (cytoF) {
+		dat_merged <- merge(dat_merged, cyto, by=c('Metadata_Well','ImageNumber', 'ObjectNumber'))    
+	    }
+            ## Change A01 -> A1
+            if (normalizeWells) {
+                charWell <- substr(dat_merged$Metadata_Well, 1, 1)
+                numWell <- as.numeric(substr(dat_merged$Metadata_Well, 2, nchar(as.character(dat_merged$Metadata_Well))))
+                total <- paste(charWell, numWell, sep="")
+                dat_merged$Metadata_Well <- as.character(total)
+            }
+            dat_merged$TREATMENT <- treat$TREAT_CMPL[match(dat_merged$Metadata_Well, treat[,wellVar])]
+            dat_merged$PLATTE <- j
+            dat_merged$VERSUCH <- i
+            dat_merged$WELL <- dat_merged$Metadata_Well
+
+            dtAll[[length(dtAll)+1]] <- dat_merged
+        }
+    }
+    return(do.call(rbind, dtAll))
+}
