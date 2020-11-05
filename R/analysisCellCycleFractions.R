@@ -52,6 +52,11 @@ calcFract <- function(data, cuts, var="Intensity_IntegratedIntensity_DNA.nucl", 
 	sub <- data[which(paste(data$VERSUCH, data$PLATTE) == plate),,drop=F]
 	out <- list()
 
+	if (any(is.na(sub$TREATMENT))) {
+	    warning("Detected NA treatment! Removing!")
+	    sub <- sub[which(!is.na(sub$TREATMENT)),,drop=F]
+	}
+
 	lvs <- unique(sub$TREATMENT)
         tI <- 0
 	for(trLv in lvs) {

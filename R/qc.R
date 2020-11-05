@@ -14,7 +14,7 @@
 #' 
 #' @export
 qc <- function(data, folder=NULL, file=NULL, uid=NULL, vars="nCells", fun=NULL, na.rm=T) {
-    if (folder == "") { folder <- NULL }
+    if (!is.null(folder) && folder == "") { folder <- NULL }
     if (is.null(uid)) { uid <- substr(Sys.time(),1,10) }
     if (!is.null(folder)) { 
         if (is.null(file)) {

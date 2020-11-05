@@ -225,7 +225,7 @@ removeRawData <- function(obj) {
 
 #' @title QC Plots
 #' @export 
-qcPlots <- function(obj, folder, ...) {
+qcPlots <- function(obj, folder=NULL, ...) {
     ## FIXME: no filename given -> ERROR
     if (is.null(obj@data)) {
         print("No data found! Re-loading original data!")
