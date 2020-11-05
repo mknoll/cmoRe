@@ -105,7 +105,7 @@ readData <- function(data, vars=NULL, treatVar=c("Treatment", "Konzentration"), 
         for (j in 1:length(data[[i]])) {
             ##read treatment
             treat <- read.csv(paste(data[[i]][[j]], files[1], sep=""), dec=",")
-            treat$TREAT_CMPL <- apply(treat[,which(colnames(treat) %in% treatVar)], 1, function(x) paste(trimws(x), collapse=sepTreat, sep=""))
+            treat$TREAT_CMPL <- apply(treat[,which(colnames(treat) %in% treatVar),drop=F], 1, function(x) paste(trimws(x), collapse=sepTreat, sep=""))
             if (is.null(vars)) {
                 cell <- data.frame(fread(paste(data[[i]][[j]], files[2], sep="")))
                 nucl <- data.frame(fread(paste(data[[i]][[j]], files[3], sep="")))

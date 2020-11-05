@@ -137,6 +137,7 @@ as pdf file, an output folder and filename can be specified.
 
 # number of cells
 exp <- qcPlots(exp, folder="/tmp/") 
+exp <- qcPlots(exp) 
 
 # Cell-Size
 exp <- qcPlots(exp, vars=c("AreaShape_Area.cell"), folder="/tmp/")

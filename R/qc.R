@@ -14,13 +14,16 @@
 #' 
 #' @export
 qc <- function(data, folder=NULL, file=NULL, uid=NULL, vars="nCells", fun=NULL, na.rm=T) {
+    if (folder == "") { folder <- NULL }
     if (is.null(uid)) { uid <- substr(Sys.time(),1,10) }
     if (!is.null(folder)) { 
         if (is.null(file)) {
-            file <- unlist(strsplit(tempfile(), "/"))
+	    #FIXME: test for other platforms
+	    sep0 <- ifelse(.Platform$OS.type == "unix", "/", "\\")
+            file <- unlist(strsplit(tempfile(), sep))
             file <- file[length(file)]
         }
-        file <- paste(folder, "/", uid, "__", file, ".pdf", sep="") 
+        file <- paste(folder, sep0, uid, "__", file, ".pdf", sep="") 
     } else {
         if (is.null(file)) { file <- paste(tempfile(),".pdf", sep="") }
     }
@@ -78,3 +81,4 @@ qc <- function(data, folder=NULL, file=NULL, uid=NULL, vars="nCells", fun=NULL, 
     dev.off()
     return(list(file, res, treat))
 }
+
