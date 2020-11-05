@@ -34,6 +34,12 @@ ncAreaFilter <- function(data, varC="AreaShape_Area.cell",
     
     ## calculate for each treatment - level
     out <- list()
+
+    if (any(is.na(sub$TREATMENT))) {        
+	warning("Detected NA treatment! Removing!")        
+	sub <- sub[which(!is.na(sub$TREATMENT)),,drop=F]        
+    }
+
     lvs <- unique(sub$TREATMENT)
     for(trLv in lvs) {      
         cat(paste("\r                ", trLv, "  ", round(which(trLv == lvs)/length(lvs)*100, 2), "%", sep=""))
