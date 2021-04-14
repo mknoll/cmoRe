@@ -23,7 +23,8 @@ qc <- function(data, folder=NULL, file=NULL, uid=NULL, vars="nCells", fun=NULL, 
             file <- unlist(strsplit(tempfile(), sep))
             file <- file[length(file)]
         }
-        file <- paste(folder, sep0, uid, "__", file, ".pdf", sep="") 
+        #file <- paste(folder, sep0, uid, "__", file, ".pdf", sep="") 
+        file <- paste(folder, uid, "__", file, ".pdf", sep="") 
     } else {
         if (is.null(file)) { file <- paste(tempfile(),".pdf", sep="") }
     }
