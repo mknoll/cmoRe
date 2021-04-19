@@ -20,7 +20,7 @@ addCutoffs <- function(obj, meta, type="cc") {
     if (length(meta$dataFB) > 0 && "fb" %in% type) {
 	obj@dataFB <- lapply(meta$dataFB, function(x) x[[1]])
 	obj@dataFB <- imputeMC(obj@dataFB)
-	nc <- assignFibroSimple(obj, obj@dataFB)
+	fb <- assignFibroSimple(obj, obj@dataFB)
 	obj@data <- data.frame(obj@data, FIBROBLAST=fb)
 	#obj@data <- assignFibroblast(data=obj@data, calc=obj@dataFB)
     }
