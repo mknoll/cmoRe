@@ -1,7 +1,7 @@
 #' @title Adds separately calculated cutoff data
 #'
 #' @export
-addCutoffs <- function(obj, meta, type="cc") {
+addCutoffs <- function(obj, meta, type=c("nc", "fb", "cc")) {
     if (length(meta$dataCC) > 0 && "cc" %in% type) {
 	obj@dataCC <- lapply(meta$dataCC, function(x) x[[1]])
 	obj@dataCC <- imputeMC(obj@dataCC)

@@ -16,7 +16,7 @@
 #' 
 #' @export
 assignNcFilterResSimple <- function(obj, calc) {
-    nc <- rep(NA, length(obj@data[,1]))
+    nc <- rep(1, length(obj@data[,1]))
     dat0 <- obj@data$AreaShape_Area.cell/obj@data$AreaShape_Area.nucl
 
     calcDF <- do.call(rbind, calc)                      
