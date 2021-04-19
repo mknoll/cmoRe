@@ -34,7 +34,7 @@ medianAgg <-function(obj) {
     }
     df <- do.call(cbind, coll)
     colnames(df) <- colnames(obj@data)[ww]
-    add <- data.frame(do.call(rbind, strsplit(unique(id), " ")))
+    add <- data.frame(do.call(rbind, strsplit(unique(id), " ")), TREATMENT=obj@data$TREATMENT)
     colnames(add) <- c("VERSUCH", "PLATTE", "WELL")
     data.frame(df, add)
 }
