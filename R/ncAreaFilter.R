@@ -52,30 +52,32 @@ ncAreaFilter <- function(data, varC="AreaShape_Area.cell",
         subTr <- subTr0[sel,]
         
         rat <- subTr[,varC]/subTr[,varN]
-        d <- density(rat[which(rat < xCut)], bw=bw)
-        #plot(d)
-        ## get extremal points (max, min)
-        d1 <- diff(d$y)
-        d2 <- diff(d1)
-        v1 <- d1[-1]
-        v2 <- d1[-length(d1)]
-        maxCandPos <- which(v1 > 0 & v2 < 0 | v1 < 0 & v2 > 0) 
-        
-        ##alle maxima / minima bei auto-bandwidth
-        maximaPos <- maxCandPos[which(d2[maxCandPos] < 0)]+1
-        minimaPos <- maxCandPos[which(d2[maxCandPos] > 0)]+1
-        
-        ##identifizierte globales maximum mit xVal > xMinGlobMax
-        maxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax)], na.rm=T))
-        
-        ## identifzierte minimum links davon, gt 1
-        minLeftPos <- which(d$y == min(d$y[which(d$x > 1 & d$x < d$x[maxPos])]))
-        
-        ## collect
-	v1 <- ifelse(length(maxPos) == 0, NA, d$x[maxPos])
-	v2 <- ifelse(length(minLeftPos) == 0, NA, d$x[minLeftPos])
-        #data.frame(d$x[maxPos], d$x[minLeftPos])
-        data.frame(v1, v2)
+	tryCatch({
+	    d <- density(rat[which(rat < xCut)], bw=bw)
+	    #plot(d)
+	    ## get extremal points (max, min)
+	    d1 <- diff(d$y)
+	    d2 <- diff(d1)
+	    v1 <- d1[-1]
+	    v2 <- d1[-length(d1)]
+	    maxCandPos <- which(v1 > 0 & v2 < 0 | v1 < 0 & v2 > 0) 
+
+	    ##alle maxima / minima bei auto-bandwidth
+	    maximaPos <- maxCandPos[which(d2[maxCandPos] < 0)]+1
+	    minimaPos <- maxCandPos[which(d2[maxCandPos] > 0)]+1
+
+	    ##identifizierte globales maximum mit xVal > xMinGlobMax
+	    maxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax)], na.rm=T))
+
+	    ## identifzierte minimum links davon, gt 1
+	    minLeftPos <- which(d$y == min(d$y[which(d$x > 1 & d$x < d$x[maxPos])]))
+
+	    ## collect
+	    v1 <- ifelse(length(maxPos) == 0, NA, d$x[maxPos])
+	    v2 <- ifelse(length(minLeftPos) == 0, NA, d$x[minLeftPos])
+	    #data.frame(d$x[maxPos], d$x[minLeftPos])
+	    data.frame(v1, v2)
+	}, error=function(e) {} )
       }
       coll <- do.call(rbind, coll)
       colnames(coll) <- c("maxPos", "minLeftPos")
