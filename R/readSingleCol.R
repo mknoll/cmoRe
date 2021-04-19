@@ -9,6 +9,10 @@
 #'
 #' @export
 readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
+    if (!file.exists(f) || dir.exists(f)) {
+	stop("Not a regular file!")
+    }
+
     #get rows in file
     if (is.null(nrow)) {
 	nrow <- getNRows(file)
@@ -38,6 +42,10 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
 #' @param file Filename
 #' @export
 getNRows <- function(file) {
+    if (!file.exists(f) || dir.exists(f)) {
+	stop("Not a regular file!")
+    }
+
     #get rows in file
     nrow <- as.integer(1)
     nrow <- .C("getNRows", file, nrow)[[2]]
