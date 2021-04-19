@@ -17,7 +17,7 @@
 #' @export
 assignFibroSimple <- function(obj, calc) {
     fb <- rep(0, length(obj@data[,1]))
-    dat0 <- obj@data$Intensity_IntegratedIntensity_DNA.nucl    
+    dat0 <- obj@data$Intensity_MedianIntensity_DNA.nucl
     calcDF <- do.call(rbind, calc)                      
     v <- unlist(calcDF[,"versuch"])                                 
     p <- unlist(calcDF[,"platte"])                      
