@@ -16,18 +16,28 @@ medianAgg <-function(obj) {
 
     coll <- list()
     tr <- list()
+    i <- 1
     for (w in ww) {
+	if (i %% 10 == 0) {
+	    cat(paste("\r     "), round(i/length(ww)*100, 2), "%")
+	}
+	i<-i+1
 	#print(colnames(obj@data)[w])
 	tmp <- list()
 	for (q in 1:length(pos)) {
 	    res <-integer(1)    
 	    val <- obj@data[pos[[q]],w]
-	    val <- val[which(!is.na(val))]
+	    fact <- 1
+	    if (length(val) > 2 && max(val[which(!is.na(val) & !is.infinite(val))]) < 1000) {
+		fact <- 100000
+	    }
+	    val <- val*fact ###ACHTUNG!!!! Kann zu infinite fuehren!
+	    val <- val[which(!is.na(val) & !is.infinite(val))]
 	    n<-as.integer(length(val))    
 	    if (length(val) > 2) {
-		y<-as.integer(val*10000)    
+		y<-as.integer(val)    
 		ret <- .C("median", n, y, res)    
-		tmp[[length(tmp)+1]] <- ret[[3]]/10000
+		tmp[[length(tmp)+1]] <- ret[[3]]/fact
 	    } else {
 		tmp[[length(tmp)+1]] <- NA
 	    }
@@ -36,7 +46,6 @@ medianAgg <-function(obj) {
     }
     df <- do.call(cbind, coll)
     colnames(df) <- colnames(obj@data)[ww]
-    print(tr)
     add <- data.frame(do.call(rbind, strsplit(unique(id), " ")))
     colnames(add) <- c("VERSUCH", "PLATTE", "WELL")
     add$TREATMENT <- obj@data$TREATMENT[match(paste(add$VERSUCH,add$PLATTE, add$WELL), id)]
