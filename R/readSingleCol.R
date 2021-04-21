@@ -9,7 +9,7 @@
 #'
 #' @export
 readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
-    if (!file.exists(f) || dir.exists(f)) {
+    if (!file.exists(file) || dir.exists(file)) {
 	stop("Not a regular file!")
     }
 
@@ -42,7 +42,7 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
 #' @param file Filename
 #' @export
 getNRows <- function(file) {
-    if (!file.exists(f) || dir.exists(f)) {
+    if (!file.exists(file) || dir.exists(file)) {
 	stop("Not a regular file!")
     }
 

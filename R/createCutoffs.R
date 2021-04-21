@@ -13,10 +13,10 @@ calcCutoffs <- function(obj) {
     xMinGlobMaxFB=0.2    
     xMaxGlobMaxFB=0.6    
 
-    for (v in 1:length(obj@objeriment)) {    
-	for (p in 1:length(obj@objeriment[[v]])) {    
+    for (v in 1:length(obj@experiment)) {    
+	for (p in 1:length(obj@experiment[[v]])) {    
 	    print(paste("VERSUCH: ", v, " PLATTE: ", p))    
-	    base <- obj@objeriment[[v]][p]    
+	    base <- obj@experiment[[v]][p]    
 
 	    #########################    
 	    ###CC    
@@ -25,7 +25,7 @@ calcCutoffs <- function(obj) {
 	    meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character")             
 	    dat <- readSingleCol(file, "Intensity_IntegratedIntensity_DNA",nrow=nrow)       
 	    ### FIXME: well name        
-	    treat <- read.csv(paste0(obj@objeriment[[1]][1], "Treatment.csv"))    
+	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
 	    treat <- treat[match(meta, treat$well),]    
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-c(1,2)], collapse="_"))   
 	    df <- data.frame(val=dat, WELL=meta, VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
