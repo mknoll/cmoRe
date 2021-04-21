@@ -1,6 +1,6 @@
 #' @title Calculate cutoffs for filters
 #' 
-#' @objort
+#' @export
 calcCutoffs <- function(obj) {
     # FIXME -> alles hardcoded!
     ##TODO: use only specific filters
