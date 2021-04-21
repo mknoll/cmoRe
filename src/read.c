@@ -66,6 +66,15 @@ void median(int *n, int *x, int *res) {
     //printf("%f\n", res[0]);
 }
 
+void sum(int *n, int *x, int *res) {
+    res[0] = 0;
+    for (int i=0; i < n[0]; i++) {
+	res[0] = res[0]+x[i];
+    }
+    printf("RESULT: %d\n", res[0]);
+    //printf("%f\m", binapprox(6, val));
+    //printf("%f\n", res[0]);
+}
 
 const char* getfield(char* line, int num)
 {

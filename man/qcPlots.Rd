@@ -4,7 +4,7 @@
 \alias{qcPlots}
 \title{QC Plots}
 \usage{
-qcPlots(obj, folder, ...)
+qcPlots(obj, folder = NULL, ...)
 }
 \description{
 QC Plots

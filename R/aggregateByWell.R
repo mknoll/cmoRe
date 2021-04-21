@@ -45,7 +45,7 @@ aggregateByWell <- function (data, fun=median, onlyCellNumber=F) {
     agg <- cbind(agg, CELLNUMBER=cnAgg[,2])
 
     ## add cell cycle fractions
-    if (any(grepl("CellCycle", colnames(data)))) {
+    if (any(grepl("CellCycle", colnames(data))) && F) {
 	print("Count cell cycle fractions ...")
 	ccAgg <- aggregate(data[,which(grepl("CellCycle_", colnames(data)))], 
 			   by=list(paste(data$VERSUCH, data$PLATTE, data$WELL, data$TREATMENT, sep=":")),

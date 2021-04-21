@@ -7,7 +7,12 @@ addCutoffs <- function(obj, meta, type=c("nc", "fb", "cc")) {
 	obj@dataCC <- imputeMC(obj@dataCC)
 	#obj@data <- assignCellCycle(data=obj@data, calc=obj@dataCC)
 	cc <- assignCellCycleSimple(obj, obj@dataCC)
-	obj@data <- data.frame(obj@data, CellCycle=cc)
+	#obj@data <- data.frame(obj@data, CellCycle=cc)
+	obj@data <- data.frame(obj@data, 
+			       CellCycle=cc, 
+			       CellCycle_DEAD=ifelse(cc == "DEAD", 1, 0), 
+			       CellCycle_G1=ifelse(cc == "G1", 1, 0), 
+			       CellCycle_G2S=ifelse(cc == "G2/S", 1,0))
 	#obj@dataCC <- calcFract(data=obj@data, cuts=obj@dataCC)
     }
     if (length(meta$dataNC) > 0 && "nc" %in% type) {

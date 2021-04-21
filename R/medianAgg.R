@@ -5,7 +5,7 @@
 #' @export
 medianAgg <-function(obj) {
     ### cols to transform
-    ww <- which(!is.na(as.numeric(obj@data[1,])) & !colnames(obj@data) %in% c("PLATTE", "VERSUCH"))
+    ww <- which(!is.na(as.numeric(obj@data[1,])) & !colnames(obj@data) %in% c("PLATTE", "VERSUCH") & !grepl("CellCycle", colnames(obj@data)))
 
     id <-paste(droplevels(factor(obj@data$VERSUCH)),droplevels(factor(obj@data$PLATTE)),droplevels(factor(obj@data$WELL)))
     pos <- list()    

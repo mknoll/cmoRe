@@ -19,17 +19,17 @@ sumAgg <-function(obj,var="CellCycle_") {
     coll <- list()
     i <- 1
     for (w in ww) {
-	if (i %% 10 == 0) {
-	    cat(paste("\r     "), round(i/length(ww)*100, 2), "%")
-	}
+	cat(paste("\r     "), round(i/length(ww)*100, 2), "%")
 	i<-i+1
 	tmp <- list()
 	for (q in 1:length(pos)) {
 	    res <-integer(1)    
 	    val <- obj@data[pos[[q]],w]
-	    val <- val[which(!is.na(val) & !is.infinite(val))]
-	    if (length(val) > 2) {
-		tmp[[length(tmp)+1]] <- sum(val)/length(val)
+	    val <- as.integer(val[which(!is.na(val) & !is.infinite(val))])
+	    n <- as.integer(length(val))
+	    if (n > 0) {
+		ret <- .C("sum", n, val, res)
+		tmp[[length(tmp)+1]] <- ret[[3]]/n
 	    } else {
 		tmp[[length(tmp)+1]] <- NA
 	    }
