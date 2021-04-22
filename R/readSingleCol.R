@@ -10,7 +10,8 @@
 #' @export
 readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
     if (!file.exists(file) || dir.exists(file)) {
-	stop("Not a regular file!")
+	warning("Not a regular file!") ### FIXME
+	return(NA)
     }
 
     #get rows in file
@@ -43,7 +44,8 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
 #' @export
 getNRows <- function(file) {
     if (!file.exists(file) || dir.exists(file)) {
-	stop("Not a regular file!")
+	warning("Not a regular file!") ## FIXME
+	return(NA)
     }
 
     #get rows in file

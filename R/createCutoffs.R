@@ -24,6 +24,12 @@ calcCutoffs <- function(obj) {
 	    nrow <- getNRows(file)        
 	    meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character")             
 	    dat <- readSingleCol(file, "Intensity_IntegratedIntensity_DNA",nrow=nrow)       
+	    if (any(is.na(c(nrow, meta, dat)))) {   #FIXME
+		dataCC[[length(dataCC)+1]] <- NA
+		dataFB[[length(dataFB)+1]] <- NA
+		dataNC[[length(dataNC)+1]] <- NA
+		next #### FIXME
+	    }
 	    ### FIXME: well name        
 	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
 	    treat <- treat[match(meta, treat$well),]    
