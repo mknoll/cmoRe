@@ -41,6 +41,11 @@ calcCutoffs <- function(obj) {
 	    ########################
 	    ### FB
 	    dat <- readSingleCol(file, "Intensity_MedianIntensity_DNA",nrow=nrow)   
+	    if (is.na(dat)) {
+		dataFB[[length(dataFB)+1]] <- NA
+		dataNC[[length(dataNC)+1]] <- NA
+		next #### FIXME
+	    }
 	    ### FIXME: well name    
 	    df <- data.frame(val=dat, WELL=meta, VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
 	    colnames(df)[1] <- varFB
@@ -52,6 +57,10 @@ calcCutoffs <- function(obj) {
 	    metaN <- meta
 	    metaN_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow)
 	    metaN_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow)
+	    if (any(is.na(c(datNucl, metaN_ObjId, metaN_ImageNumber)))) {
+		dataNC[[length(dataNC)+1]] <- NA
+		next #### FIXME
+	    }
 	    dfN <- data.frame(val=datNucl, WELL=metaN, ON=metaN_ObjId, IN=metaN_ImageNumber,
 			      VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
 	    colnames(dfN)[1] <- "AreaShape_Area.nucl"
