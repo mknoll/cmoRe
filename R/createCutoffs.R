@@ -24,7 +24,7 @@ calcCutoffs <- function(obj) {
 	    nrow <- getNRows(file)        
 	    meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character")             
 	    dat <- readSingleCol(file, "Intensity_IntegratedIntensity_DNA",nrow=nrow)       
-	    if (any(is.na(c(nrow, meta, dat)))) {   #FIXME
+	    if (is.na(nrow) || length(meta) == 1 || length(dat) == 1) {  ## FIXME
 		dataCC[[length(dataCC)+1]] <- NA
 		dataFB[[length(dataFB)+1]] <- NA
 		dataNC[[length(dataNC)+1]] <- NA
@@ -41,7 +41,7 @@ calcCutoffs <- function(obj) {
 	    ########################
 	    ### FB
 	    dat <- readSingleCol(file, "Intensity_MedianIntensity_DNA",nrow=nrow)   
-	    if (is.na(dat)) {
+	    if (length(dat) == 1 && is.na(dat)) {
 		dataFB[[length(dataFB)+1]] <- NA
 		dataNC[[length(dataNC)+1]] <- NA
 		next #### FIXME
@@ -57,7 +57,7 @@ calcCutoffs <- function(obj) {
 	    metaN <- meta
 	    metaN_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow)
 	    metaN_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow)
-	    if (any(is.na(c(datNucl, metaN_ObjId, metaN_ImageNumber)))) {
+	    if (length(datNucl) == 1 || length(metaN_ObjId) ==1 || length(metaN_ImageNumber) == 1) { 
 		dataNC[[length(dataNC)+1]] <- NA
 		next #### FIXME
 	    }

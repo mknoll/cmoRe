@@ -17,6 +17,10 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
     #get rows in file
     if (is.null(nrow)) {
 	nrow <- getNRows(file)
+	if (is.na(row)) {
+	    warning("Not a regular file!") ### FIXME
+	    return(NA)
+	}
     }
 
     #find col pos
