@@ -23,14 +23,14 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
 	    ### counter for comparion with previous data
 	    cnt <- cnt+1
 	    if (!is.null(cutoffPrev) && 
-		!is.na(cutoffPrev$dataCC[[cnt]]) && 
-		!is.na(cutoffPrev$dataNC[[cnt]]) && 
-		!is.na(cutoffPrev$dataFB[[cnt]])) {
+		length(cutoffPrev$dataCC[[cnt]]) > 0 && 
+		length(cutoffPrev$dataNC[[cnt]]) >0 && 
+		length(cutoffPrev$dataFB[[cnt]]) > 0) {
 		## data intact FIXME!
-		#dataCC[[cnt]] <- cutoffPrev$dataCC[[cnt]]
-		#dataNC[[cnt]] <- cutoffPrev$dataNC[[cnt]]
-		#dataFB[[cnt]] <- cutoffPrev$dataFB[[cnt]]
-		#next
+		dataCC[[cnt]] <- cutoffPrev$dataCC[[cnt]]
+		dataNC[[cnt]] <- cutoffPrev$dataNC[[cnt]]
+		dataFB[[cnt]] <- cutoffPrev$dataFB[[cnt]]
+		next
 	    }
 
 
