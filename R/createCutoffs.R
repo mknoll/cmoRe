@@ -3,7 +3,7 @@
 #' @param cutoffPrev returen data from calcCutoffs from previous run
 #' 
 #' @export
-calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
+calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t", rmTreatCol=c(1)) {
     # FIXME -> alles hardcoded!
     ##TODO: use only specific filters
 
@@ -23,9 +23,9 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
 	    ### counter for comparion with previous data
 	    cnt <- cnt+1
 	    if (!is.null(cutoffPrev) && 
-		length(cutoffPrev$dataCC[[cnt]]) > 0 && 
-		length(cutoffPrev$dataNC[[cnt]]) >0 && 
-		length(cutoffPrev$dataFB[[cnt]]) > 0) {
+		length(cutoffPrev$dataCC[[cnt]]) > 0 && !is.na(cutoffPrev$dataCC[[cnt]]) &&
+		length(cutoffPrev$dataNC[[cnt]]) >0 && !is.na(cutoffPrev$dataNC[[cnt]]) &&
+		length(cutoffPrev$dataFB[[cnt]]) > 0 && !is.na(cutoffPrev$dataFB[[cnt]])) {
 		## data intact FIXME!
 		dataCC[[cnt]] <- cutoffPrev$dataCC[[cnt]]
 		dataNC[[cnt]] <- cutoffPrev$dataNC[[cnt]]
@@ -50,7 +50,7 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
 	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
 	    treat_bak <- treat
 	    treat <- treat[match(meta, treat$well),]    
-	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-c(1,2)], collapse="_"))   
+	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
 	    df <- data.frame(val=dat, WELL=meta, VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
 	    colnames(df)[1] <- varCC
 	    dataCC[[length(dataCC)+1]] <- cellCycleFractIntegrDNAInt(df, log = T, xMinGlobMax = log(100), var = varCC)
@@ -90,7 +90,7 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
 	    metaC_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow, type="character",delim=delim)         
 	    treat <- treat_bak
 	    treat <- treat[match(metaC, treat$well),]    
-	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-c(1,2)], collapse="_"))   
+	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
 	    dfC <- data.frame(val=datCell, WELL=metaC, ON=metaC_ObjId, IN=metaC_ImageNumber,
 			      VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
 	    colnames(dfC)[1] <- "AreaShape_Area.cell"
