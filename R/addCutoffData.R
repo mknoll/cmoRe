@@ -4,21 +4,21 @@
 addCutoffs <- function(obj, meta, type=c("nc", "fb", "cc")) {
     ### check for missing data
     if (length(meta$dataCC) > 0 && "cc" %in% type) {
-	len <- lapply(meta$dataCC, function(x) x[[1]])
+	len <- lapply(meta$dataCC, function(x) length(x[[1]]))
 	if (any(unlist(len == 1))) { 
 	    stop("Missing data! Please rerun calcCutoffs with already retrieved data: 
 		 calcCutoff(obj, cutoffs)!")
 	}
     }
     if (length(meta$dataNC) > 0 && "nc" %in% type) {
-	len <- lapply(meta$dataNC, function(x) x[[1]])
+	len <- lapply(meta$dataNC, function(x) length(x[[1]]))
 	if (any(unlist(len == 1))) { 
 	    stop("Missing data! Please rerun calcCutoffs with already retrieved data: 
 		 calcCutoff(obj, cutoffs)!")
 	}
     }
     if (length(meta$dataFB) > 0 && "fb" %in% type) {
-	len <- lapply(meta$dataFB, function(x) x[[1]])
+	len <- lapply(meta$dataFB, function(x) length(x[[1]]))
 	if (any(unlist(len == 1))) { 
 	    stop("Missing data! Please rerun calcCutoffs with already retrieved data: 
 		 calcCutoff(obj, cutoffs)!")
