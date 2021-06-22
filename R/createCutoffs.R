@@ -1,7 +1,9 @@
 #' @title Calculate cutoffs for filters
 #' 
+#' @param cutoffPrev returen data from calcCutoffs from previous run
+#' 
 #' @export
-calcCutoffs <- function(obj) {
+calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t") {
     # FIXME -> alles hardcoded!
     ##TODO: use only specific filters
 
@@ -13,17 +15,31 @@ calcCutoffs <- function(obj) {
     xMinGlobMaxFB=0.2    
     xMaxGlobMaxFB=0.6    
 
+    cnt <- 0
     for (v in 1:length(obj@experiment)) {    
 	for (p in 1:length(obj@experiment[[v]])) {    
 	    print(paste("VERSUCH: ", v, " PLATTE: ", p))    
 	    base <- obj@experiment[[v]][p]    
+	    ### counter for comparion with previous data
+	    cnt <- cnt+1
+	    if (!is.null(cutoffPrev) && 
+		!is.na(cutoffPrev$dataCC[[cnt]]) && 
+		!is.na(cutoffPrev$dataNC[[cnt]]) && 
+		!is.na(cutoffPrev$dataFB[[cnt]])) {
+		## data intact FIXME!
+		#dataCC[[cnt]] <- cutoffPrev$dataCC[[cnt]]
+		#dataNC[[cnt]] <- cutoffPrev$dataNC[[cnt]]
+		#dataFB[[cnt]] <- cutoffPrev$dataFB[[cnt]]
+		#next
+	    }
+
 
 	    #########################    
 	    ###CC    
 	    file <- paste(base, "Primarieswithoutborder.txt", sep="")    
 	    nrow <- getNRows(file)        
-	    meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character")             
-	    dat <- readSingleCol(file, "Intensity_IntegratedIntensity_DNA",nrow=nrow)       
+	    meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character",delim=delim)             
+	    dat <- readSingleCol(file, "Intensity_IntegratedIntensity_DNA",nrow=nrow,delim=delim)       
 	    if (is.na(nrow) || length(meta) == 1 || length(dat) == 1) {  ## FIXME
 		dataCC[[length(dataCC)+1]] <- NA
 		dataFB[[length(dataFB)+1]] <- NA
@@ -32,6 +48,7 @@ calcCutoffs <- function(obj) {
 	    }
 	    ### FIXME: well name        
 	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
+	    treat_bak <- treat
 	    treat <- treat[match(meta, treat$well),]    
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-c(1,2)], collapse="_"))   
 	    df <- data.frame(val=dat, WELL=meta, VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
@@ -40,7 +57,7 @@ calcCutoffs <- function(obj) {
 
 	    ########################
 	    ### FB
-	    dat <- readSingleCol(file, "Intensity_MedianIntensity_DNA",nrow=nrow)   
+	    dat <- readSingleCol(file, "Intensity_MedianIntensity_DNA",nrow=nrow,delim=delim)   
 	    if (length(dat) == 1 && is.na(dat)) {
 		dataFB[[length(dataFB)+1]] <- NA
 		dataNC[[length(dataNC)+1]] <- NA
@@ -53,10 +70,10 @@ calcCutoffs <- function(obj) {
 
 	    ######################
 	    ### NC
-	    datNucl <- readSingleCol(file, "AreaShape_Area",nrow=nrow)   
+	    datNucl <- readSingleCol(file, "AreaShape_Area",nrow=nrow,delim=delim)   
 	    metaN <- meta
-	    metaN_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow)
-	    metaN_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow)
+	    metaN_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow,delim=delim)
+	    metaN_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow,delim=delim)
 	    if (length(datNucl) == 1 || length(metaN_ObjId) ==1 || length(metaN_ImageNumber) == 1) { 
 		dataNC[[length(dataNC)+1]] <- NA
 		next #### FIXME
@@ -66,10 +83,14 @@ calcCutoffs <- function(obj) {
 	    colnames(dfN)[1] <- "AreaShape_Area.nucl"
 
 	    file <- paste(base, "Cells.txt", sep="")
-	    datCell <- readSingleCol(file, "AreaShape_Area",nrow=nrow)   
-	    metaC <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character")         
-	    metaC_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow, type="character")         
-	    metaC_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow, type="character")         
+	    nrow <- getNRows(file)        
+	    datCell <- readSingleCol(file, "AreaShape_Area",nrow=nrow,delim=delim)   
+	    metaC <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character",delim=delim)         
+	    metaC_ObjId <- readSingleCol(file, "ObjectNumber",nrow=nrow, type="character",delim=delim)         
+	    metaC_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow, type="character",delim=delim)         
+	    treat <- treat_bak
+	    treat <- treat[match(metaC, treat$well),]    
+	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-c(1,2)], collapse="_"))   
 	    dfC <- data.frame(val=datCell, WELL=metaC, ON=metaC_ObjId, IN=metaC_ImageNumber,
 			      VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
 	    colnames(dfC)[1] <- "AreaShape_Area.cell"
@@ -81,6 +102,4 @@ calcCutoffs <- function(obj) {
 
     cutoffs <- list(dataCC=dataCC, dataNC=dataNC, dataFB=dataFB)
     return(cutoffs)
-
-    #save(cutoffs, file=paste0("../analysis/cutoffs_",uid))
 }

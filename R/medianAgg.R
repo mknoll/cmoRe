@@ -36,8 +36,18 @@ medianAgg <-function(obj) {
 	    n<-as.integer(length(val))    
 	    if (length(val) > 2) {
 		y<-as.integer(val)    
-		ret <- .C("median", n, y, res)    
-		tmp[[length(tmp)+1]] <- ret[[3]]/fact
+		## remove NA in y
+		if (any(is.na(y))) {
+		    rmY <- which(is.na(y))
+		    y <- y[-rmY]
+		    n <- as.integer(length(y))
+		}
+		if (length(y) > 2) {
+		    ret <- .C("median", n, y, res)    
+		    tmp[[length(tmp)+1]] <- ret[[3]]/fact
+		} else {
+		    tmp[[length(tmp)+1]] <- NA
+		}
 	    } else {
 		tmp[[length(tmp)+1]] <- NA
 	    }

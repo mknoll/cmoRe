@@ -76,10 +76,23 @@ void sum(int *n, int *x, int *res) {
     //printf("%f\n", res[0]);
 }
 
-const char* getfield(char* line, int num)
+//const char* getfield(char* line, int num)
+const char* getfield(char* line, int num, int del)
 {
     char *tok;    
-    char delimiter[1] = "\t";    
+    //char delimiter[1] = "\t";    
+    char d1[1]= "\t";
+    char d2[1] = ",";
+    char d3[1] = ";";
+    char *delimiter;
+    if (del == 0) {
+	delimiter = d2;
+    } else if( del == 1) {
+	delimiter = d1;
+    } else if( del == 2) {
+	delimiter = d3;
+    }
+
     tok = strsep(&line, delimiter); // first token    
     while(tok != NULL) {        
 	//printf ("%s ", tok);    
@@ -106,7 +119,7 @@ void getNRows(char **file, int *n) {
     n[0] = lines;
 }
 
-void readCol(char **file, int *nrow, int *ncol, double *ret) {
+void readCol(char **file, int *nrow, int *ncol, double *ret, int *del) {
     printf("opening: %s\n", file[0]);
 
     //get data
@@ -119,7 +132,7 @@ void readCol(char **file, int *nrow, int *ncol, double *ret) {
 	//printf("Field 3 would be %s\n", getfield(tmp, 3));
         // NOTE strtok clobbers tmp
 	if (i >= 1) {
-	    ret[i] = atof(getfield(tmp, ncol[0]));
+	    ret[i] = atof(getfield(tmp, ncol[0], del[0]));
 	    //printf("%f\n", ret[i]);
 	} 
 	i++;
@@ -129,7 +142,7 @@ void readCol(char **file, int *nrow, int *ncol, double *ret) {
 }
 
 
-void readColChar(char **file, int *nrow, int *ncol, char **ret) {
+void readColChar(char **file, int *nrow, int *ncol, char **ret, int *del) {
     printf("opening: %s\n", file[0]);
 
     //get data
@@ -142,7 +155,7 @@ void readColChar(char **file, int *nrow, int *ncol, char **ret) {
 	//printf("Field 3 would be %s\n", getfield(tmp, 3));
         // NOTE strtok clobbers tmp
 	if (i >= 1) {
-	    const char *stringA = getfield(tmp, ncol[0]);
+	    const char *stringA = getfield(tmp, ncol[0], del[0]);
 	    strncpy(ret[i], stringA, strlen(stringA)+1);
 	    //printf("%f\n", ret[i]);
 	} 

@@ -9,7 +9,6 @@
 imputeMC <- function(cuts, plot=F, ...) {
     ## TODO: Update n and fract 
     ## Imput lower /upper 
-
     for (i in 1:length(cuts)) {
 	print(i)
 	tmp <- data.frame(do.call(rbind, lapply(cuts, function(x) lapply(x$data, function(y) y$estim))[[i]]), do.call(rbind, lapply(cuts, function(x) lapply(x$data, function(y) y$treatment))[[i]]))

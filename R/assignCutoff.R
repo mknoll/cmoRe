@@ -93,3 +93,27 @@ assignCutoff <- function(data, calc, type="CIexcl",
 
   return (data)
 }
+
+
+assignCutoffSimple <- function(data, calc, var) {
+    ## out vector
+    group <- rep(NA, length(obj@data[,1]))
+    calcDF <- do.call(rbind, calc)
+    dat0 <- obj@data[,var]
+    v <- unlist(calcDF[,"versuch"])      
+    p <- unlist(calcDF[,"platte"])                          
+    for (i in 1:length(calcDF[,1])) {           
+	cat(".")    
+	w <- which(obj@data$VERSUCH == v[i] & obj@data$PLATTE == p[i])    
+	treat <- obj@data$TREATMENT[w]    
+	for (tr in unique(unlist(lapply(calc[[i]]$data, function(x) x$treatment)))) {    
+	    ww <-which(treat == tr)        
+	    val <- lapply(calc[[i]]$data, function(x)  if (x$treatment == tr) {  x$estim })        
+	    val <- Filter(length,val)[[1]]                                                                 
+	    #group[w][ww][which(dat0[w][ww] < val[["g1MinLeftPos"]])] <- "DEAD"         
+	    group[w][ww][which(dat0[w][ww] < val[["g1MinRightPos"]])] <- "LOW"        
+	    group[w][ww][which(dat0[w][ww] > val[["g1MinRightPos"]])] <- "HIGH"        
+	}        
+    }    
+    group
+}

@@ -8,7 +8,7 @@
 #' @useDynLib cmoRe
 #'
 #' @export
-readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
+readSingleCol <- function(file, var, nrow=NULL, type="numeric", delim="\t") {
     if (!file.exists(file) || dir.exists(file)) {
 	warning("Not a regular file!") ### FIXME
 	return(NA)
@@ -23,6 +23,18 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
 	}
     }
 
+    # delimiter numerical encoding
+    del <-numeric(1)
+    if (delim  == "\t") {
+	del[1] <- 0
+    } else if (delim == ",") {
+	del[1] <- 1
+    } else if(delim == ";") {
+	del[1] <- 2
+    } else {
+	stop("unknown delimitor. only \t and , supported")
+    }
+
     #find col pos
     tmp <- data.frame(fread(file, nrow=10))
     ncol <- as.integer(which(colnames(tmp) == var))
@@ -31,13 +43,12 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric") {
 	stop(paste0("Could not find ", var))
     }
 
-
     if (type == "numeric") {
 	data <- numeric(nrow)
-	data <- .C("readCol", file, nrow, ncol, data)[[4]][-c(1:2)]
+	data <- .C("readCol", file, nrow, ncol, data, del)[[4]][-c(1:2)]
     } else if (type == "character") {
 	data <- character(nrow)
-	data <- .C("readColChar", file, nrow, ncol, data)[[4]][-c(1:2)]
+	data <- .C("readColChar", file, nrow, ncol, data, del)[[4]][-c(1:2)]
     }
     return(data)
 }
