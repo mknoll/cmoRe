@@ -9,16 +9,21 @@
 #'
 #' @export
 readSingleCol <- function(file, var, nrow=NULL, type="numeric", delim="\t") {
-    if (!file.exists(file) || dir.exists(file)) {
-	warning("Not a regular file!") ### FIXME
+    if (!file.exists(file)) {
+	warning(paste(file, ": not a regular file (!file.exists)!")) ### FIXME
+	return(NA)
+    }
+    if (dir.exists(file)) {
+	warning(paste(file, ": not a regular file (dir.exists)!")) ### FIXME
 	return(NA)
     }
 
     #get rows in file
     if (is.null(nrow)) {
 	nrow <- getNRows(file)
+	print(paste0("nrow=NULL, nrow:", nrow))
 	if (is.na(nrow)) {
-	    warning("Not a regular file!") ### FIXME
+	    warning(paste(file, ": not a regular file!")) ### FIXME
 	    return(NA)
 	}
     }
