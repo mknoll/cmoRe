@@ -95,17 +95,19 @@ assignCutoff <- function(data, calc, type="CIexcl",
 }
 
 
+#' @title assign cutoffs imple
+#' @export
 assignCutoffSimple <- function(data, calc, var) {
     ## out vector
-    group <- rep(NA, length(obj@data[,1]))
+    group <- rep(NA, length(data[,1]))
     calcDF <- do.call(rbind, calc)
-    dat0 <- obj@data[,var]
+    dat0 <- data[,var]
     v <- unlist(calcDF[,"versuch"])      
     p <- unlist(calcDF[,"platte"])                          
     for (i in 1:length(calcDF[,1])) {           
 	cat(".")    
-	w <- which(obj@data$VERSUCH == v[i] & obj@data$PLATTE == p[i])    
-	treat <- obj@data$TREATMENT[w]    
+	w <- which(data$VERSUCH == v[i] & data$PLATTE == p[i])    
+	treat <- data$TREATMENT[w]    
 	for (tr in unique(unlist(lapply(calc[[i]]$data, function(x) x$treatment)))) {    
 	    ww <-which(treat == tr)        
 	    val <- lapply(calc[[i]]$data, function(x)  if (x$treatment == tr) {  x$estim })        

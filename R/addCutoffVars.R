@@ -30,7 +30,7 @@ addCutoffVars <- function(obj, vars, fun=identity, type="mG", ...) {
 	cutoffData[[length(cutoffData)+1]] <- cu
 
 	### assign single cells 
-	newD <- assignCutoffSimple(obj@data, cu, var=var)
+	newD <- assignCutoffSimple(obj2@data, cu, var=var)
 	addData[[length(addData)+1]] <- newD 
 	addDataNames <- c(addDataNames, paste0("GRP_",var))
 	high <- ifelse(newD == "HIGH", 1, 0)
