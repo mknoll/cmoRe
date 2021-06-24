@@ -48,6 +48,7 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t", rmTreatCol=c(1)) {
 	    }
 	    ### FIXME: well name        
 	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
+	    treat <- data.frame(apply(treat,2, function(x) trimws(x)))
 	    treat_bak <- treat
 	    treat <- treat[match(meta, treat$well),]    
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
@@ -90,7 +91,6 @@ calcCutoffs <- function(obj, cutoffPrev=NULL, delim="\t", rmTreatCol=c(1)) {
 	    metaC_ImageNumber <- readSingleCol(file, "ImageNumber",nrow=nrow, type="character",delim=delim)         
 	    treat <- treat_bak
 	    treat <- treat[match(metaC, treat$well),]    
-	    treat <- data.frame(apply(treat,2, function(x) trimws(x)))
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
 	    dfC <- data.frame(val=datCell, WELL=metaC, ON=metaC_ObjId, IN=metaC_ImageNumber,
 			      VERSUCH=v, PLATTE=p, TREATMENT=treat$TREATMENT)
