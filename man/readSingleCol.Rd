@@ -4,7 +4,7 @@
 \alias{readSingleCol}
 \title{Read CP file single column}
 \usage{
-readSingleCol(file, var, nrow = NULL, type = "numeric")
+readSingleCol(file, var, nrow = NULL, type = "numeric", delim = "\\t")
 }
 \arguments{
 \item{file}{CP file}

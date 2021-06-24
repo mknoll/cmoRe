@@ -22,7 +22,7 @@ medianAgg <-function(obj) {
 	    cat(paste("\r     "), round(i/length(ww)*100, 2), "%")
 	}
 	i<-i+1
-	print(colnames(obj@data)[w])
+	#print(colnames(obj@data)[w])
 	tmp <- list()
 	for (q in 1:length(pos)) {
 	    res <-integer(1)    

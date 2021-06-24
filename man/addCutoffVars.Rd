@@ -4,7 +4,7 @@
 \alias{addCutoffVars}
 \title{Add cutoff variables}
 \usage{
-addCutoffVars(obj, vars, fun = identity, type = "mG", plotOnly = F, ...)
+addCutoffVars(obj, vars, fun = identity, type = "mG", ...)
 }
 \description{
 Cutoff right of the global maximum
