@@ -39,28 +39,33 @@ require(cmoRe)
 
 # Data requirements
 
-This analysis pipeline was built to analyze data obtained with an 
-InCell System, and analyzed using Cell Profiler. The cell profiler pipeline
-is published in X. 
+This analysis pipeline was built to analyze images obtained with an 
+InCell System, and processed using CellProfiler. 
 
 A typical experiment might be structured as follows:
 
-96 Well plate in which cells (from one batch) are seeded.
+96 Well plate in which cells (from one experimental run/batch) are seeded.
 Treatment with n different conditions, 3 replicates (=wells) per condition.
-Three repetitions of the experiment. 
+Three repetitions of the experiment. Staining of nuclei with DAPI, 
+cytoplasmatic staining with e.g. Desmin for NRCMs.
 
-For each run, two files created by CellProfiler and a treatment file are
+For each run, three files created by CellProfiler and a treatment file are
 needed. 
 
 The CellProfiler files are named as follows:
-Cells.txt: Cell measurements
-Primarieswithoutborder.txt: Nuclear measurements
+Cells.txt: Total cell measurements
+Cytoplasm.txt: Cytoplasm measurements (without nuclei)
+Primarieswithoutborder.txt: Nuclear measurements (using nuclei as seeds).
 
-When merging both files by object id, similar variable names will be changes 
-to var.x for cell derived data and var.y for nuclear data. 
+When merging files (image number, object number), suffixes .nucl, .cyto, .cell are used for 
+equal CellProfiler feature names. 
 
 ```{r}
 read.csv(system.file("extdata", "run1_1/Cells.txt", package = "cmoRe"), sep="\t")[1:3,1:5]
+
+read.csv(system.file("extdata", "run1_1/Cytoplasm.txt", package = "cmoRe"), sep="\t")[1:3,1:5]
+
+read.csv(system.file("extdata", "run1_1/Primarieswithoutborder.txt", package = "cmoRe"), sep="\t")[1:3,1:5]
 ```
 
 Additionally, a treatment file is required:
@@ -72,7 +77,7 @@ Further columns might be supplied, e.g. a "Konzentration" Column.
 read.csv(system.file("extdata", "run1_1/Treatment.csv", package = "cmoRe"))[1:5,]
 ```
 
-All three files should be stored in a single folder for each experimental run.
+All files should be stored in a single folder for each experimental run.
 
 # Data structure
 
@@ -124,17 +129,24 @@ exp <- getData(exp,
 #exp <- getData(exp, 
 #	       files=c("Treatment.csv", "Cells.txt", "Primarieswithoutborder.txt"),
 #		vars="AreaShape_Area")
+
+#read all three files
+#exp <- getData(exp)
 ```
 
 # QC 
 
-To get a first impression, all variables and the number of 
+First, we check if all expected data (as specified in the Treatment file) is 
+correctly loaded.
+```{r}
+exp <- checkFilter(exp, filter=NULL)
+```
+
+To get a first overview of the data, all variables and the number of 
 cells per well can be plotted side by side to a treatment plan. Results are stored
 as pdf file, an output folder and filename can be specified.
-```{r}
-## TODO
-#exp <- checkFilter(exp, filter=100)
 
+```{r}
 # number of cells
 exp <- qcPlots(exp, folder="/tmp/") 
 exp <- qcPlots(exp) 
@@ -143,28 +155,81 @@ exp <- qcPlots(exp)
 exp <- qcPlots(exp, vars=c("AreaShape_Area.cell"), folder="/tmp/")
 ```
 
+
 # Cell-cycle and Cell/Nuclear Ratio
 
-Nuclear DNA Intensity and Cell/Nuclear Size can be used to determine cell cyclus
-for each cell and filter certain cell populations.
+Nuclear DNA intensity and cellular/nuclear size ratio can be used to determine cell cycle state
+for each cell and to filter dead cells.
 
-Calculation of Cellcycle is performed by supplying fun="cc", ratios with fun="nc".
-Not specifying the fun parameter will calculate both.
+Cutoff respecting certain contraints are calculated with the calc() function.
+The parameter fun="cc" will calculate cutoffs for cell cycle, cellular/nuclear ratio 
+with fun="nc".
+Not specifying the fun parameter will calculate both and a fibroblast filter (see below).
 
-This step might be time consuming, depending on the number of bootstraps to obtain
-cutoffs.
+This step might take some time, depending on the number of bootstraps used to obtain
+cutoffs and the amount of data.
+
+A faster alternative (which does not require to load all data simulateneously) is described below.
+
 ```{r}
 exp <- calc(exp, fun="nc")
+
+# check assignments 
+table(exp@data$ncArea)
+
+# calculate cell cycle cutoffs
+#exp <- calc(exp, fun="cc")  #data not included 
+```
+
+# Fibroblast identification
+
+calc() also provides the ability to idnetify cutoffs used for fibroblast identification 
+
+```{r}
+# calculate fibroblast cutoffs
+# exp <- calc(exp, fun="fb") #data not included
+```
+
+
+# Alternative method for cutoff calculation
+
+As larger experiments might require quite a lot of RAM - cutoffs can also be 
+calculated in a first step by reading only the data needed for the calculations
+without having to keep all data in memory. 
+
+It is sufficient to create an imageExp object with the data structure as described above
+(lists with entries per experiment / plate). 
+
+```{r}
+exp0 <- new("imageExp", "fast_cutoff_calc", data)
+
+#calcualte cutoffs without loading all data
+cutoffs <- calcCutoffs(exp0, fun="nc")
+
+#now we load the data
+exp0 <- getData(exp0)
+
+#and use the precalculated cutoffs
+exp0 <- addCutoffs(exp0, cutoffs)
+table(exp0@data$ncArea)
+
+#get cell cycle fractions 
+#cc <- sumAgg(exp0) #data not included 
 ```
 
 # Cell cycle 
 We can plot cell cycles per plate or aggregated per run to evalaute quaality.
 Data is not included in the supplied data.
 ```{r eval=F}
+## if we use calc() (slower) to calcuate cutoffs:
 #exp <- calc(exp, fun="cc")
 analyzeCC(exp)
+
 ##per plate
 #analyzeCC(exp, aggregate=T)
+
+## if we use calcCutoffs() and addCutoffs() 
+cc <- sumAgg(exp0)
 ```
 
 # Filter data 
@@ -173,8 +238,9 @@ Next, data is filtered by the previously calculated cutoffs to remove dead cells
 
 ```{r}
 exp <- filter(exp)
-### TODO
-#exp <- checkFilter(exp, filter=100)
+
+### and we can decide to keep only wells with at least 1000 cells
+exp <- checkFilter(exp, filter=1000)
 ```
 
 # Additional variables (diff, ratio)
@@ -186,13 +252,26 @@ exp <- addVars(exp, c("AreaShape_Area"))
 colnames(exp@data)[which(grepl("AreaShape", colnames(exp@data)))]
 ```
 
+# Compute cutoffs for additional features
+We can try to split features based on their distribution.
+
+```{r}
+vars <- "RATIO_NC_AreaShape_Area"
+exp<- addCutoffVars(exp, vars=vars, fun=log)
+head(exp@data)
+```
+
+
 # Aggregation per well
 
 For the following analyses, all measurements are aggregated per well (default: median),
 might be specified by the fun argument. 
 
 ```{r}
-exp <- agg(exp)
+exp@dataAgg <- medianAgg(exp)
+
+## calculate fractions of generated binary variables 
+exp@dataAgg <- cbind(exp@dataAgg, fractAgg(exp))
 ```
 
 # Remove raw data
@@ -205,13 +284,6 @@ as we need the raw data for single cell analysis (see below).
 #exp <- removeRawData(exp)
 ```
 
-# Processing log
-To keep track of which processing steps were performed, we can inspect the log of 
-each element.
-
-```{r}
-getLog(exp)
-```
 
 # Z-transform
 
@@ -297,15 +369,14 @@ coll <- list()
 for (i in 1:length(cn)) {
     dat$VAL <-dat[,which(colnames(dat) == cn)[i]]
     fit <- lmer(frm, data=dat[,])
-    coll[[length(coll)+1]] <- predict(fit)
+    coll[[length(coll)+1]] <- predict(fit)-dat$VAL
     names(coll)[length(coll)] <- cn[i]
 }
 coll <- do.call(cbind, coll)
 
 require(pheatmap)
 image(t(dat[,cn]))
-s <- apply(coll, 1, function(x) paste(x, collapse=";"))
-image(t(coll[which(!duplicated(s)),cn]))
+image(t(coll[,cn]))
 ```
 
 

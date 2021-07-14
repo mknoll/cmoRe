@@ -1,8 +1,8 @@
 Package: cmoRe
 Type: Package
 Title: Analysis of CellProfiler acquired data for disease profiling and drug discovery.
-Version: 0.2.2
-Date: 2021-04-19
+Version: 0.3
+Date: 2021-07-13
 Author: Maximilian Knoll <m.knoll@dkfz.de>
 Maintainer: Maximilian Knoll <m.knoll@dkfz.de>
 Description: Package for analysis of single cell morphology data acquired with CellProfiler

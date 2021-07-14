@@ -4,10 +4,7 @@
 \alias{calcCutoffs}
 \title{Calculate cutoffs for filters}
 \usage{
-calcCutoffs(obj, cutoffPrev = NULL, delim = "\\t", rmTreatCol = c(1))
-}
-\arguments{
-\item{cutoffPrev}{returen data from calcCutoffs from previous run}
+calcCutoffs(obj, fun = c("cc", "nc", "fb"), delim = "\\t", rmTreatCol = c(1))
 }
 \description{
 Calculate cutoffs for filters

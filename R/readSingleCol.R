@@ -37,7 +37,7 @@ readSingleCol <- function(file, var, nrow=NULL, type="numeric", delim="\t") {
     } else if(delim == ";") {
 	del[1] <- 2
     } else {
-	stop("unknown delimitor. only \t and , supported")
+	stop("unknown delimitor. only '\\t',  ',' and ';' supported")
     }
 
     #find col pos

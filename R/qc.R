@@ -20,7 +20,7 @@ qc <- function(data, folder=NULL, file=NULL, uid=NULL, vars="nCells", fun=NULL, 
         if (is.null(file)) {
 	    #FIXME: test for other platforms
 	    sep0 <- ifelse(.Platform$OS.type == "unix", "/", "\\")
-            file <- unlist(strsplit(tempfile(), sep))
+            file <- unlist(strsplit(tempfile(), sep0))
             file <- file[length(file)]
         }
         #file <- paste(folder, sep0, uid, "__", file, ".pdf", sep="") 
