@@ -86,9 +86,9 @@ const char* getfield(char* line, int num, int del)
     char d3[1] = ";";
     char *delimiter;
     if (del == 0) {
-	delimiter = d2;
-    } else if( del == 1) {
 	delimiter = d1;
+    } else if( del == 1) {
+	delimiter = d2;
     } else if( del == 2) {
 	delimiter = d3;
     }
@@ -149,10 +149,12 @@ void readColChar(char **file, int *nrow, int *ncol, char **ret, int *del) {
     FILE* stream = fopen(file[0], "r");
     char line[32768]; //TODO: check
     int i = 0;
+    //printf("lsjdhfdjsfh\n");
     while (fgets(line, 32768, stream) != NULL)
     {
         char* tmp = strdup(line);
 	//printf("Field 3 would be %s\n", getfield(tmp, 3));
+	//printf("inside \n");
         // NOTE strtok clobbers tmp
 	if (i >= 1) {
 	    const char *stringA = getfield(tmp, ncol[0], del[0]);
