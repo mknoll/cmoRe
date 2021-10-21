@@ -64,27 +64,26 @@ cellCycleFractIntegrDNAInt <- function(data, var="Intensity_IntegratedIntensity_
     for(trLv in lvs) {      
 	cat(paste("\r             ", trLv, "  ", round(which(trLv == lvs)/length(lvs)*100, 2), "%", sep=""))
 	subTr0 <- sub[which(sub$TREATMENT == trLv),var,drop=F]
-	if (length(subTr0[,1]) < nMin) {
+	##### TODO: check if sufficient data is available!
+	if (length(subTr0[,1]) <= 1) {
+	    ### FIXME -> FAIL
+	    warning("Not enough data!")
+	}
+	if (log) {
+	    subTr0 <- data.frame(apply(subTr0, 2, log))
+	}
+
+	## permutation
+	coll <- foreach (i=1:nBoot) %dopar% {
+	    if (i %% 100 == 0) { cat(paste("\r   ", round(i/nBoot*100,2), "%        ",sep="")) }
+	    sel <- sample(1:length(subTr0[,1]), length(subTr0[,1]), replace=T)
+	    subTr <- subTr0[sel,,drop=F]
+
+	    ### checkfor sufficient numbers
 	    v1 <- NA
 	    v2 <- NA
 	    v3 <- NA
-	} else {
-
-	    ##### TODO: check if sufficient data is available!
-	    if (length(subTr0[,1]) <= 1) {
-		### FIXME -> FAIL
-		warning("Not enough data!")
-	    }
-	    if (log) {
-		subTr0 <- data.frame(apply(subTr0, 2, log))
-	    }
-
-	    ## permutation
-	    coll <- foreach (i=1:nBoot) %dopar% {
-		if (i %% 100 == 0) { cat(paste("\r   ", round(i/nBoot*100,2), "%        ",sep="")) }
-		sel <- sample(1:length(subTr0[,1]), length(subTr0[,1]), replace=T)
-		subTr <- subTr0[sel,,drop=F]
-
+	    if (length(subTr[,1]) >= nMin) {
 		d <- density(subTr[,var], na.rm=T)
 		#plot(d)
 		## get extremal points (max, min)
