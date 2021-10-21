@@ -17,6 +17,7 @@
 #' @param upperCL upper confidence level, default: 0.9
 #' @param cutUpper use only data below a certain cutoff, 
 #' default: NULL -> not used
+#' @param nMin minimum required number of cells
 #' 
 #' @import parallel
 #' @import foreach
@@ -29,7 +30,7 @@ cellCycleFractIntegrDNAInt <- function(data, var="Intensity_IntegratedIntensity_
                                        nBoot=100, lowerCL=0.1, upperCL=0.9, log=F, 
 				       cutUpper=NULL,
 				       xMinGlobMax=0, xMaxGlobMax=NULL, 
-				       no_cores=NULL, ..) {
+				       no_cores=NULL, nMin=100, ..) {
   #retain only necessary columns
     data <- data[,which(colnames(data) %in% c(var, "TREATMENT", "VERSUCH", "PLATTE"))]
     print("-----")
@@ -61,59 +62,65 @@ cellCycleFractIntegrDNAInt <- function(data, var="Intensity_IntegratedIntensity_
     lvs <- unique(sub$TREATMENT)
     lvs <- lvs[which(!is.na(lvs))]
     for(trLv in lvs) {      
-        cat(paste("\r             ", trLv, "  ", round(which(trLv == lvs)/length(lvs)*100, 2), "%", sep=""))
-      subTr0 <- sub[which(sub$TREATMENT == trLv),var,drop=F]
-      
-      ##### TODO: check if sufficient data is available!
-      if (length(subTr0[,1]) <= 1) {
-	  ### FIXME -> FAIL
-	  warning("Not enough data!")
-      }
-      if (log) {
-	    subTr0 <- data.frame(apply(subTr0, 2, log))
-      }
-      
-      ## permutation
-      coll <- foreach (i=1:nBoot) %dopar% {
-	  if (i %% 100 == 0) { cat(paste("\r   ", round(i/nBoot*100,2), "%        ",sep="")) }
-	  sel <- sample(1:length(subTr0[,1]), length(subTr0[,1]), replace=T)
-	  subTr <- subTr0[sel,,drop=F]
-    
-	  d <- density(subTr[,var], na.rm=T)
-	  #plot(d)
-	  ## get extremal points (max, min)
-	  d1 <- diff(d$y)
-	  d2 <- diff(d1)
-	  v1 <- d1[-1]
-	  v2 <- d1[-length(d1)]
-	  maxCandPos <- which(v1 > 0 & v2 < 0 | v1 < 0 & v2 > 0) 
+	cat(paste("\r             ", trLv, "  ", round(which(trLv == lvs)/length(lvs)*100, 2), "%", sep=""))
+	subTr0 <- sub[which(sub$TREATMENT == trLv),var,drop=F]
+	if (length(subTr0[,1]) < nMin) {
+	    v1 <- NA
+	    v2 <- NA
+	    v3 <- NA
+	} else {
 
-	  ##alle maxima / minima bei auto-bandwidth
-	  maximaPos <- maxCandPos[which(d2[maxCandPos] < 0)]+1
-	  minimaPos <- maxCandPos[which(d2[maxCandPos] > 0)]+1
+	    ##### TODO: check if sufficient data is available!
+	    if (length(subTr0[,1]) <= 1) {
+		### FIXME -> FAIL
+		warning("Not enough data!")
+	    }
+	    if (log) {
+		subTr0 <- data.frame(apply(subTr0, 2, log))
+	    }
 
-	  ##identifizierte globales maximum -> i.d.R. G1 peak
-	  if (is.null(xMaxGlobMax)) {
-	      g1MaxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax)]))
-	  } else {
-	      g1MaxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax & d$x < xMaxGlobMax)]))
-	  }
+	    ## permutation
+	    coll <- foreach (i=1:nBoot) %dopar% {
+		if (i %% 100 == 0) { cat(paste("\r   ", round(i/nBoot*100,2), "%        ",sep="")) }
+		sel <- sample(1:length(subTr0[,1]), length(subTr0[,1]), replace=T)
+		subTr <- subTr0[sel,,drop=F]
 
-	  ## identifiziere 1. min links/rechts davon
-	  g1MinLeftPos <- rev(minimaPos[which(g1MaxPos-minimaPos > 0)])[1]
-	  g1MinRightPos <- minimaPos[which(g1MaxPos-minimaPos < 0)][1]
+		d <- density(subTr[,var], na.rm=T)
+		#plot(d)
+		## get extremal points (max, min)
+		d1 <- diff(d$y)
+		d2 <- diff(d1)
+		v1 <- d1[-1]
+		v2 <- d1[-length(d1)]
+		maxCandPos <- which(v1 > 0 & v2 < 0 | v1 < 0 & v2 > 0) 
 
-	  ##identifiziere lokales maximum links von glob -> tote zellen
-	  deadMaxPos <- which(d$y == max(d$y[d$x < d$x[g1MinLeftPos]] ))
+		##alle maxima / minima bei auto-bandwidth
+		maximaPos <- maxCandPos[which(d2[maxCandPos] < 0)]+1
+		minimaPos <- maxCandPos[which(d2[maxCandPos] > 0)]+1
 
-	  ##identifizierte lokales maximum rechts von glob -> G2 peak
-	  g2MaxPos <- which(d$y == max(d$y[d$x > d$x[g1MinRightPos]]))
+		##identifizierte globales maximum -> i.d.R. G1 peak
+		if (is.null(xMaxGlobMax)) {
+		    g1MaxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax)]))
+		} else {
+		    g1MaxPos <- which(d$y == max(d$y[which(d$x > xMinGlobMax & d$x < xMaxGlobMax)]))
+		}
 
-	  ## collect
-	  #data.frame(d$x[g1MaxPos], d$x[g1MinLeftPos], d$x[g1MinRightPos])
-	  v1 <- ifelse(length(g1MaxPos) == 0, NA, d$x[g1MaxPos])
-	  v2 <- ifelse(length(g1MinLeftPos) == 0, NA, d$x[g1MinLeftPos])
-	  v3 <- ifelse(length(g1MinRightPos) == 0, NA, d$x[g1MinRightPos])
+		## identifiziere 1. min links/rechts davon
+		g1MinLeftPos <- rev(minimaPos[which(g1MaxPos-minimaPos > 0)])[1]
+		g1MinRightPos <- minimaPos[which(g1MaxPos-minimaPos < 0)][1]
+
+		##identifiziere lokales maximum links von glob -> tote zellen
+		deadMaxPos <- which(d$y == max(d$y[d$x < d$x[g1MinLeftPos]] ))
+
+		##identifizierte lokales maximum rechts von glob -> G2 peak
+		g2MaxPos <- which(d$y == max(d$y[d$x > d$x[g1MinRightPos]]))
+
+		## collect
+		#data.frame(d$x[g1MaxPos], d$x[g1MinLeftPos], d$x[g1MinRightPos])
+		v1 <- ifelse(length(g1MaxPos) == 0, NA, d$x[g1MaxPos])
+		v2 <- ifelse(length(g1MinLeftPos) == 0, NA, d$x[g1MinLeftPos])
+		v3 <- ifelse(length(g1MinRightPos) == 0, NA, d$x[g1MinRightPos])
+	    }
 	  data.frame(v1, v2, v3)
       }
 
