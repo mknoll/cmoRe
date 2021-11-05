@@ -44,7 +44,8 @@ calcCutoffs <- function(obj, fun=c("cc", "nc", "fb"), delim="\t", rmTreatCol=c(1
 
 	    ##### TREATMENTS
 	    ### FIXME: well name        
-	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"))    
+	    treatT <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"), nrow=1)
+	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"), colClasses=rep("character", length(treatT[1,])))    
 	    treat <- data.frame(apply(treat,2, function(x) trimws(x)))
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
 	    treat_bak <- treat
