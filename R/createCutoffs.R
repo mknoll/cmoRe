@@ -59,6 +59,9 @@ calcCutoffs <- function(obj, fun=c("cc", "nc", "fb"), delim="\t", rmTreatCol=c(1
 		file <- paste(base, "Primarieswithoutborder.txt", sep="")    
 		nrow <- getNRows(file)        
 		meta <- readSingleCol(file, "Metadata_Well",nrow=nrow, type="character",delim=delim)             
+		if (normalizeWells) {
+		    meta <- paste0(substr(meta, 1, 1), as.numeric(as.character(substr(meta, 2, nchar(meta)))))
+		}
 		treat <- treat[match(meta, treat$well),]    
 		
 		if ("cc" %in% fun) {
