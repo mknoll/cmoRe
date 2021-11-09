@@ -1,7 +1,7 @@
 #' @title Calculate cutoffs for filters
 #' 
 #' @export
-calcCutoffs <- function(obj, fun=c("cc", "nc", "fb"), delim="\t", rmTreatCol=c(1), prev=NULL) {
+calcCutoffs <- function(obj, fun=c("cc", "nc", "fb"), delim="\t", rmTreatCol=c(1), prev=NULL, normalizeWells=T, well="well") {
     # FIXME -> alles hardcoded!
     ##TODO: use only specific filters
 
@@ -43,11 +43,14 @@ calcCutoffs <- function(obj, fun=c("cc", "nc", "fb"), delim="\t", rmTreatCol=c(1
 	    }
 
 	    ##### TREATMENTS
-	    ### FIXME: well name        
 	    treatT <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"), nrow=1)
 	    treat <- read.csv(paste0(obj@experiment[[v]][p], "Treatment.csv"), colClasses=rep("character", length(treatT[1,])))    
 	    treat <- data.frame(apply(treat,2, function(x) trimws(x)))
 	    treat$TREATMENT <- apply(treat, 1, function(x) paste(x[-rmTreatCol], collapse="_"))   
+	    if (normalizeWells) {
+		### FIXME: well name        
+		treat[,well] <- paste0(substr(treat[,well], 1,1), as.numeric(as.character(substr(treat[,well], 2, nchar(treat[,well])))))
+	    }
 	    treat_bak <- treat
 
 	    #########################    
